@@ -14,6 +14,7 @@ public class QuizActivity extends AppCompatActivity {
     private Button mTrueButton;
     private Button mFalseButton;
     private Button mNextButton;
+    private Button mPreviousButton;
     private TextView mQuestionTextView;
 
     private Question[] mQuestionBank = new Question[] {
@@ -25,36 +26,24 @@ public class QuizActivity extends AppCompatActivity {
     };
     private int mCurrentIndex = 0;
 
-    private void updateQuestion() {
-        int question = mQuestionBank[mCurrentIndex].getTextResId();
-        mQuestionTextView.setText(question);
-    }
-
     private void nextQuestion() {
         mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
         updateQuestion();
     }
 
-    private void checkAnswer(boolean userPressedTrue){
-        boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
-
-        int messageResId = 0;
-        if(userPressedTrue == answerIsTrue){
-            messageResId = R.string.correct_toast;
-        } else {
-            messageResId = R.string.incorrect_toast;
-        }
-
-        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
+    private void previousQuestion() {
+        mCurrentIndex--;
+        if(mCurrentIndex < 0)
+            mCurrentIndex = mQuestionBank.length - 1;
+        updateQuestion();
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_quiz);
+    private void updateQuestion() {
+        int question = mQuestionBank[mCurrentIndex].getTextResId();
+        mQuestionTextView.setText(question);
+    }
 
-        mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
-
+    private void setButtonClickListeners() {
         mTrueButton  = (Button) findViewById(R.id.true_button);
         mTrueButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -79,6 +68,36 @@ public class QuizActivity extends AppCompatActivity {
             }
         });
 
+        mPreviousButton = (Button) findViewById(R.id.previous_button);
+        mPreviousButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                previousQuestion();
+            }
+        });
+    }
+
+    private void checkAnswer(boolean userPressedTrue){
+        boolean answerIsTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
+
+        int messageResId = 0;
+        if(userPressedTrue == answerIsTrue){
+            messageResId = R.string.correct_toast;
+        } else {
+            messageResId = R.string.incorrect_toast;
+        }
+
+        Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_quiz);
+
+        setButtonClickListeners();
+
+        mQuestionTextView = (TextView) findViewById(R.id.question_text_view);
         mQuestionTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
