@@ -23,11 +23,11 @@ public class QuizActivity extends AppCompatActivity {
     private Button mTrueButton;
     private Button mFalseButton;
     private Button mCheatButton;
-    private ImageButton mNextButton;
-    private ImageButton mPreviousButton;
+    private Button mNextButton;
     private TextView mQuestionTextView;
     private int mCurrentIndex = 0;
     private boolean mIsCheater = false;
+    private boolean questionAnswered = false;
 
     private Question[] mQuestionBank = new Question[] {
             new Question(R.string.question_oceans, true),
@@ -46,12 +46,13 @@ public class QuizActivity extends AppCompatActivity {
     private void previousQuestion() {
         mCurrentIndex--;
         if(mCurrentIndex < 0)
-            mCurrentIndex = mQuestionBank.length - 1;
+            mCurrentIndex = 0;
         updateQuestion();
     }
 
     private void updateQuestion() {
         int question = mQuestionBank[mCurrentIndex].getTextResId();
+        questionAnswered = false;
         mQuestionTextView.setText(question);
     }
 
@@ -72,19 +73,12 @@ public class QuizActivity extends AppCompatActivity {
             }
         });
 
-        mNextButton = (ImageButton) findViewById(R.id.next_button);
+        mNextButton = (Button) findViewById(R.id.next_button);
         mNextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                nextQuestion();
-            }
-        });
-
-        mPreviousButton = (ImageButton) findViewById(R.id.previous_button);
-        mPreviousButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                previousQuestion();
+                if(questionAnswered)
+                    nextQuestion();
             }
         });
 
@@ -113,6 +107,7 @@ public class QuizActivity extends AppCompatActivity {
             }
         }
         Toast.makeText(this, messageResId, Toast.LENGTH_SHORT).show();
+        questionAnswered = true;
     }
 
     @Override
