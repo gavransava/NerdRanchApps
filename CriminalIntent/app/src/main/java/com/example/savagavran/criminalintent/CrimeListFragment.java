@@ -13,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Created by sava.gavran on 10/12/2016.
@@ -22,6 +23,7 @@ public class CrimeListFragment extends Fragment {
 
     private RecyclerView mCrimeRecycleView;
     private CrimeAdapter mAdapter;
+    private Crime mCrimePosition;
 
     public CrimeListFragment() {
 
@@ -54,7 +56,7 @@ public class CrimeListFragment extends Fragment {
             mAdapter = new CrimeAdapter(crimes);
             mCrimeRecycleView.setAdapter(mAdapter);
         } else {
-            mAdapter.notifyDataSetChanged();
+            mAdapter.notifyItemChanged(mAdapter.getCrimePosition(mCrimePosition));
         }
     }
 
@@ -85,6 +87,7 @@ public class CrimeListFragment extends Fragment {
         @Override
         public void onClick(View v) {
             Intent intent = CrimeActivity.newIntent(getActivity(),mCrime.getId());
+            mCrimePosition = mCrime;
             startActivity(intent);
         }
     }
@@ -113,6 +116,10 @@ public class CrimeListFragment extends Fragment {
         @Override
         public int getItemCount() {
             return mCrimes.size();
+        }
+
+        private int getCrimePosition(Crime crime) {
+            return mCrimes.indexOf(crime);
         }
     }
 }
