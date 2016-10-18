@@ -18,10 +18,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
-/**
- * Created by sava.gavran on 10/12/2016.
- */
-
 public class CrimeListFragment extends Fragment {
 
     private final String DATE_FORMAT1 = "EEE MMM d";

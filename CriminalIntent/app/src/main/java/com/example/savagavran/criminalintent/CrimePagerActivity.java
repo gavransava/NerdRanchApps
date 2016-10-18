@@ -12,10 +12,6 @@ import android.support.v4.view.ViewPager;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Created by sava.gavran on 10/17/2016.
- */
-
 public class CrimePagerActivity extends FragmentActivity {
 
     private static final String EXTRA_CRIME_ID =

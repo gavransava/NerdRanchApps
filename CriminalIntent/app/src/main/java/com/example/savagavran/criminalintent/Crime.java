@@ -3,10 +3,6 @@ package com.example.savagavran.criminalintent;
 import java.util.Date;
 import java.util.UUID;
 
-/**
- * Created by sava.gavran on 10/10/2016.
- */
-
 public class Crime {
 
     private UUID mId;
