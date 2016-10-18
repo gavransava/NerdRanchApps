@@ -29,13 +29,17 @@ public class CrimeFragment extends Fragment {
 
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
+    private static final String DIALOG_TIME = "DialogTime";
     private static final int REQUEST_DATE = 0;
+    private static final int REQUEST_TIME = 1;
 
     private Crime mCrime;
     private EditText mTitleField;
     private Button mDateButton;
+    private Button mTimeButton;
     private CheckBox mSolvedCheckBox;
     private final String DATE_FORMAT = "EEEE, MMM d, y";
+    public static final String TIME_FORMAT = "H:m:s";
 
     public static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
@@ -75,6 +79,20 @@ public class CrimeFragment extends Fragment {
         });
     }
 
+    private void wireTimeButton() {
+        updateTime();
+        mTimeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager manager = getFragmentManager();
+                TimePickerFragment dialog = TimePickerFragment.newInstance(mCrime.getTime());
+                dialog.setTargetFragment(CrimeFragment.this, REQUEST_TIME);
+                dialog.show(manager, DIALOG_TIME);
+            }
+        });
+
+    }
+
     private void wireSolvedCheckBox() {
         mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -90,6 +108,11 @@ public class CrimeFragment extends Fragment {
         mDateButton.setText(fmt.format(mCrime.getDate()));
     }
 
+    private void updateTime() {
+        SimpleDateFormat fmt = new SimpleDateFormat(TIME_FORMAT);
+        mTimeButton.setText(fmt.format(mCrime.getTime()));
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,10 +126,12 @@ public class CrimeFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_crime, container, false);
         mTitleField = (EditText)v.findViewById(R.id.crime_title);
         mDateButton = (Button) v.findViewById(R.id.crime_date);
+        mTimeButton = (Button) v.findViewById(R.id.crime_time);
         mSolvedCheckBox = (CheckBox) v.findViewById(R.id.crime_solved);
 
         wireTitleField();
         wireDateButton();
+        wireTimeButton();
         wireSolvedCheckBox();
 
         return v;
@@ -122,6 +147,12 @@ public class CrimeFragment extends Fragment {
             Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             mCrime.setDate(date);
             updateDate();
+        }
+
+        if(requestCode == REQUEST_TIME) {
+            Date time = (Date) data.getSerializableExtra(TimePickerFragment.EXTRA_TIME);
+            mCrime.setTime(time);
+            updateTime();
         }
     }
 }

@@ -12,6 +12,7 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +22,8 @@ import java.util.UUID;
 
 public class CrimeListFragment extends Fragment {
 
+    private final String DATE_FORMAT1 = "EEE MMM d";
+    private final String DATE_FORMAT2 = "z y";
     private RecyclerView mCrimeRecycleView;
     private CrimeAdapter mAdapter;
     private Crime mCrimePosition;
@@ -80,7 +83,7 @@ public class CrimeListFragment extends Fragment {
         public void bindCrime(Crime crime) {
             mCrime = crime;
             mTitleTextView.setText(mCrime.getTitle());
-            mDateTextView.setText(mCrime.getDate().toString());
+            mDateTextView.setText(mergeDateTime(mCrime));
             mSolvedCheckBox.setChecked(mCrime.isSolved());
         }
 
@@ -121,5 +124,15 @@ public class CrimeListFragment extends Fragment {
         private int getCrimePosition(Crime crime) {
             return mCrimes.indexOf(crime);
         }
+    }
+
+    private String mergeDateTime(Crime crime) {
+        crime.getDate();
+        SimpleDateFormat fmt = new SimpleDateFormat(DATE_FORMAT1);
+        String date1 = fmt.format(crime.getDate());
+        fmt = new SimpleDateFormat(DATE_FORMAT2);
+        String date2 = fmt.format(crime.getDate());
+        fmt = new SimpleDateFormat(CrimeFragment.TIME_FORMAT);
+        return date1 + " " + fmt.format(crime.getTime()) + " " + date2;
     }
 }
