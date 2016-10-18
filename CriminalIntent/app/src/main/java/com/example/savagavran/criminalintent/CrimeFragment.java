@@ -3,6 +3,7 @@ package com.example.savagavran.criminalintent;
 import java.security.PrivateKey;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 import java.util.UUID;
 
 import android.app.Activity;
@@ -104,12 +105,12 @@ public class CrimeFragment extends Fragment {
     }
 
     private void updateDate() {
-        SimpleDateFormat fmt = new SimpleDateFormat(DATE_FORMAT);
+        SimpleDateFormat fmt = new SimpleDateFormat(DATE_FORMAT, Locale.US);
         mDateButton.setText(fmt.format(mCrime.getDate()));
     }
 
     private void updateTime() {
-        SimpleDateFormat fmt = new SimpleDateFormat(TIME_FORMAT);
+        SimpleDateFormat fmt = new SimpleDateFormat(TIME_FORMAT, Locale.US);
         mTimeButton.setText(fmt.format(mCrime.getTime()));
     }
 

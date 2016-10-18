@@ -9,11 +9,13 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Locale;
 import java.util.UUID;
 
 /**
@@ -85,6 +87,12 @@ public class CrimeListFragment extends Fragment {
             mTitleTextView.setText(mCrime.getTitle());
             mDateTextView.setText(mergeDateTime(mCrime));
             mSolvedCheckBox.setChecked(mCrime.isSolved());
+            mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    mCrime.setSolved(isChecked);
+                }
+            });
         }
 
         @Override
@@ -128,11 +136,11 @@ public class CrimeListFragment extends Fragment {
 
     private String mergeDateTime(Crime crime) {
         crime.getDate();
-        SimpleDateFormat fmt = new SimpleDateFormat(DATE_FORMAT1);
+        SimpleDateFormat fmt = new SimpleDateFormat(DATE_FORMAT1, Locale.US);
         String date1 = fmt.format(crime.getDate());
-        fmt = new SimpleDateFormat(DATE_FORMAT2);
+        fmt = new SimpleDateFormat(DATE_FORMAT2, Locale.US);
         String date2 = fmt.format(crime.getDate());
-        fmt = new SimpleDateFormat(CrimeFragment.TIME_FORMAT);
+        fmt = new SimpleDateFormat(CrimeFragment.TIME_FORMAT, Locale.US);
         return date1 + " " + fmt.format(crime.getTime()) + " " + date2;
     }
 }
