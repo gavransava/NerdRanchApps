@@ -10,6 +10,7 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.DatePicker;
 
 import java.util.Calendar;
@@ -23,6 +24,7 @@ public class DatePickerFragment extends DialogFragment {
 
     private static final String ARG_DATE = "date";
     private DatePicker mDatePicker;
+    private Button mOKButtong;
 
     public static DatePickerFragment newInstance(Date date) {
         Bundle args = new Bundle();
@@ -49,32 +51,26 @@ public class DatePickerFragment extends DialogFragment {
         mDatePicker = (DatePicker) v.findViewById(R.id.dialog_date_date_picker);
         mDatePicker.init(year, month, day, null);
 
+        mOKButtong = (Button) v.findViewById(R.id.ok_button);
+        mOKButtong.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int year = mDatePicker.getYear();
+                int month = mDatePicker.getMonth();
+                int day = mDatePicker.getDayOfMonth();
+                Date date = new GregorianCalendar(year, month, day).getTime();
+                sendResult(Activity.RESULT_OK, date);
+            }
+        });
+
         return v;
-
-        /*
-                        .OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                int year = mDatePicker.getYear();
-                                int month = mDatePicker.getMonth();
-                                int day = mDatePicker.getDayOfMonth();
-                                Date date = new GregorianCalendar(year, month, day).getTime();
-                                sendResult(Activity.RESULT_OK, date);
-                            }
-                        })*/
-
     }
 
     private void sendResult(int resultCode, Date date) {
-        if (getTargetFragment() == null) {
-            return;
-        }
-
-        Intent intent = new Intent();
+        Intent intent = getActivity().getIntent();
         intent.putExtra(EXTRA_DATE, date);
-
-        getTargetFragment()
-                .onActivityResult(getTargetRequestCode(), resultCode, intent);
+        getActivity().setResult(resultCode, intent);
+        getActivity().finish();
     }
 
 }
