@@ -4,26 +4,31 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.app.NavUtils;
 import android.support.v4.view.ViewPager;
+import android.support.v7.app.AppCompatActivity;
 
 import java.util.List;
 import java.util.UUID;
 
-public class CrimePagerActivity extends FragmentActivity {
+public class CrimePagerActivity extends AppCompatActivity {
 
     private static final String EXTRA_CRIME_ID =
             "com.example.savagavran.criminalintent.crime_id";
+    private static final String EXTRA_SUBTITLE_VISIBILITY =
+            "com.example.savagavran.criminalintent.subtitle_visibility";
 
     private ViewPager mViewPager;
     private List<Crime> mCrimes;
     private CrimeLab mCrimeLab;
+    private boolean mSubtitleVisibility;
 
-    public static Intent newIntent(Context packageContext, UUID crimeId) {
+    public static Intent newIntent(Context packageContext, UUID crimeId, boolean subtitleVisibility) {
         Intent intent = new Intent(packageContext, CrimePagerActivity.class);
         intent.putExtra(EXTRA_CRIME_ID, crimeId);
+        intent.putExtra(EXTRA_SUBTITLE_VISIBILITY, subtitleVisibility);
         return intent;
     }
 
@@ -33,6 +38,7 @@ public class CrimePagerActivity extends FragmentActivity {
         setContentView(R.layout.activity_crime_pager);
 
         UUID crimeId = (UUID) getIntent().getSerializableExtra(EXTRA_CRIME_ID);
+        mSubtitleVisibility = (boolean) getIntent().getSerializableExtra(EXTRA_SUBTITLE_VISIBILITY);
 
         mViewPager = (ViewPager) findViewById(R.id.activity_crime_pager_view_pager);
 
@@ -54,5 +60,12 @@ public class CrimePagerActivity extends FragmentActivity {
 
         // instead of for loop iterating solution from the book (Listing 11.6)
         mViewPager.setCurrentItem(mCrimes.indexOf(mCrimeLab.getCrime(crimeId)));
+    }
+
+    @Override
+    public Intent getSupportParentActivityIntent() {
+        Intent intent = NavUtils.getParentActivityIntent(this);
+        CrimeListFragment.reCreateIntent(intent, mSubtitleVisibility);
+        return intent;
     }
 }
