@@ -1,9 +1,11 @@
 package com.example.savagavran.criminalintent;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.menu.MenuAdapter;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -15,9 +17,9 @@ import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -28,6 +30,8 @@ public class CrimeListFragment extends Fragment {
     private final String DATE_FORMAT2 = "z y";
     private static final String SAVED_SUBTITLE_VISIBLE_INTENT = "subtitle_intent";
     private static final String SAVED_SUBTITLE_VISIBLE_BUNDLE = "subtitle_bundle";
+    private static final int REQUEST_DELETE_CRIME = 0;
+    private static final String DELETE_CRIME = "delete_crime";
     private RecyclerView mCrimeRecycleView;
     private CrimeAdapter mAdapter;
     private Crime mCrimePosition;
@@ -35,6 +39,11 @@ public class CrimeListFragment extends Fragment {
 
     public static Intent reCreateIntent(Intent intent, boolean subtitleVisible) {
         intent.putExtra(SAVED_SUBTITLE_VISIBLE_INTENT, subtitleVisible);
+        return intent;
+    }
+
+    public static Intent deleteCrime(Intent intent, UUID crimeId) {
+        intent.putExtra(DELETE_CRIME, crimeId);
         return intent;
     }
 
@@ -62,6 +71,7 @@ public class CrimeListFragment extends Fragment {
         if (savedInstanceState != null) {
             mSubtitleVisible = savedInstanceState.getBoolean(SAVED_SUBTITLE_VISIBLE_BUNDLE);
         }
+
 
         mCrimeRecycleView = (RecyclerView) view.findViewById(R.id.crime_recycler_view);
         mCrimeRecycleView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -100,7 +110,7 @@ public class CrimeListFragment extends Fragment {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
-            case R.id.menu_time_new_crime:
+            case R.id.menu_item_new_crime:
                 Crime crime = new Crime();
                 CrimeLab.get(getActivity()).addCrime(crime);
                 Intent intent = CrimePagerActivity
@@ -138,6 +148,8 @@ public class CrimeListFragment extends Fragment {
         if(crimes.size() != 0)
             if(crimes.get(crimes.size()-1).getTitle() == null)
                 crimeLab.removeLastCrime();
+
+
 
         if(mAdapter == null) {
             mAdapter = new CrimeAdapter(crimes);
@@ -183,7 +195,7 @@ public class CrimeListFragment extends Fragment {
         public void onClick(View v) {
             Intent intent = CrimePagerActivity.newIntent(getActivity(),mCrime.getId(), mSubtitleVisible);
             mCrimePosition = mCrime;
-            startActivity(intent);
+            startActivityForResult(intent, REQUEST_DELETE_CRIME);
         }
     }
 
@@ -216,6 +228,10 @@ public class CrimeListFragment extends Fragment {
         private int getCrimePosition(Crime crime) {
             return mCrimes.indexOf(crime);
         }
+
+        private void removeCrime(int index){
+            mCrimes.remove(index);
+        }
     }
 
     private String mergeDateTime(Crime crime) {
@@ -226,5 +242,21 @@ public class CrimeListFragment extends Fragment {
         String date2 = fmt.format(crime.getDate());
         fmt = new SimpleDateFormat(CrimeFragment.TIME_FORMAT, Locale.US);
         return date1 + " " + fmt.format(crime.getTime()) + " " + date2;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(resultCode != Activity.RESULT_OK) {
+            return;
+        }
+
+        if(requestCode == REQUEST_DELETE_CRIME){
+            UUID mCrimeId = (UUID) data.getSerializableExtra(DELETE_CRIME);
+            CrimeLab lab = CrimeLab.get(getActivity());
+            int index = mAdapter.mCrimes.indexOf(lab.getCrime(mCrimeId));
+
+            mAdapter.removeCrime(index);
+            mAdapter.notifyItemRemoved(index);
+        }
     }
 }
