@@ -37,7 +37,7 @@ public class CrimeListFragment extends Fragment {
     private RecyclerView mCrimeRecycleView;
     private LinearLayout mNoCrimesLayout;
     private CrimeAdapter mAdapter;
-    private Crime mCrimePosition;
+    private UUID mCrimePosition;
     private Button mNewCrimeButton;
     private boolean mSubtitleVisible;
 
@@ -179,9 +179,14 @@ public class CrimeListFragment extends Fragment {
             mAdapter = new CrimeAdapter(crimes);
             mCrimeRecycleView.setAdapter(mAdapter);
         } else {
-            mAdapter.notifyItemChanged(mAdapter.getCrimePosition(mCrimePosition));
+            mAdapter.setCrimes(crimes);
+            if (mCrimePosition != null) {
+                for(Crime c : crimes) {
+                    if(c.getId().equals(mCrimePosition))
+                        mAdapter.notifyItemChanged(crimes.indexOf(c));
+                }
+            }
         }
-
         updateSubtitle();
     }
 
@@ -211,6 +216,7 @@ public class CrimeListFragment extends Fragment {
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     mCrime.setSolved(isChecked);
+                    CrimeLab.get(getActivity()).updateCrime(mCrime);
                 }
             });
         }
@@ -218,7 +224,7 @@ public class CrimeListFragment extends Fragment {
         @Override
         public void onClick(View v) {
             Intent intent = CrimePagerActivity.newIntent(getActivity(),mCrime.getId(), mSubtitleVisible);
-            mCrimePosition = mCrime;
+            mCrimePosition = mCrime.getId();
             startActivityForResult(intent, REQUEST_DELETE_CRIME);
         }
     }
@@ -249,8 +255,8 @@ public class CrimeListFragment extends Fragment {
             return mCrimes.size();
         }
 
-        private int getCrimePosition(Crime crime) {
-            return mCrimes.indexOf(crime);
+        public void setCrimes(List<Crime> crimes) {
+            mCrimes = crimes;
         }
 
         private void removeCrime(int index){

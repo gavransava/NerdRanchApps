@@ -58,8 +58,12 @@ public class CrimePagerActivity extends AppCompatActivity {
             }
         });
 
-        // instead of for loop iterating solution from the book (Listing 11.6)
-        mViewPager.setCurrentItem(mCrimes.indexOf(mCrimeLab.getCrime(crimeId)));
+        Crime crime = mCrimeLab.getCrime(crimeId);
+        for(Crime c : mCrimes) {
+            if(c.getId().equals(crime.getId()))
+                mViewPager.setCurrentItem(mCrimes.indexOf(c));
+        }
+
     }
 
     @Override
