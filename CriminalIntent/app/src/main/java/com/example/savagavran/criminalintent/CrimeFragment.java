@@ -37,6 +37,7 @@ public class CrimeFragment extends Fragment {
     private Button mDateButton;
     private Button mTimeButton;
     private CheckBox mSolvedCheckBox;
+    private Menu mMenu;
     private final String DATE_FORMAT = "EEEE, MMM d, y";
     public static final String TIME_FORMAT = "H:m:s";
 
@@ -167,19 +168,29 @@ public class CrimeFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_crime, menu);
+        mMenu = menu;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch(item.getItemId()) {
-            case R.id.menu_item_delete_crime:
-                Intent intent = new Intent();
-                getActivity().setResult(Activity.RESULT_OK,CrimeListFragment.deleteCrime(intent, mCrime.getId()));
-                getActivity().finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
 
-}
+/*        MenuItem delete = mMenu.findItem(R.id.menu_item_delete_crime);
+        if(mCrime.getTitle() == null) {
+            delete.setEnabled(false);
+        } else {
+            delete.setEnabled(true);
+        }*/
+            switch(item.getItemId()) {
+                case R.id.menu_item_delete_crime:
+                    if(mCrime.getTitle() != null) {
+                        Intent intent = new Intent();
+                        getActivity().setResult(Activity.RESULT_OK, CrimeListFragment.deleteCrime(intent, mCrime.getId()));
+                        getActivity().finish();
+                    }
+                    return true;
+                default:
+                    return super.onOptionsItemSelected(item);
+            }
+        }
+
+    }

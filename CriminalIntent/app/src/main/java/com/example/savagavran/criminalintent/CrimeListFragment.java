@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.view.menu.MenuAdapter;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -21,7 +20,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -169,7 +167,8 @@ public class CrimeListFragment extends Fragment {
             if (crimes.get(crimes.size() - 1).getTitle() == null) {
                 if(crimes.size() == 1)
                     mNoCrimesLayout.setVisibility(View.VISIBLE);
-                crimeLab.removeLastCrime();
+                crimeLab.deleteLastCrime();
+                crimes.remove(crimes.size() - 1);
             }
         }
         else {
@@ -284,6 +283,9 @@ public class CrimeListFragment extends Fragment {
         return date1 + " " + fmt.format(crime.getTime()) + " " + date2;
     }
 
+
+    // Isn't entered first time the fragment for editing crimes is made and when X
+    // (delete crime is pushed instead of back)
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode != Activity.RESULT_OK) {

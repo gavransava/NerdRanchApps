@@ -38,8 +38,11 @@ public class CrimeLab {
         mDatabase.insert(CrimeTable.Name, null, values);
     }
 
-    public void removeLastCrime() {
-
+    public void deleteLastCrime() {
+        mDatabase.delete(CrimeTable.Name,
+                "_id = (SELECT Max(_id) FROM " + CrimeTable.Name + ")",
+                null
+        );
     }
 
     public void deleteCrime(UUID uuid) {
