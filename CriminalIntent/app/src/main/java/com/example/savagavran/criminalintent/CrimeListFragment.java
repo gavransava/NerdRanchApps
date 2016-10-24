@@ -33,6 +33,7 @@ public class CrimeListFragment extends Fragment {
     private static final String SAVED_SUBTITLE_VISIBLE_INTENT = "subtitle_intent";
     private static final String SAVED_SUBTITLE_VISIBLE_BUNDLE = "subtitle_bundle";
     private static final int REQUEST_DELETE_CRIME = 0;
+    private static final int BACK_INSERTING = 0;
     private static final String DELETE_CRIME = "delete_crime";
     private RecyclerView mCrimeRecycleView;
     private LinearLayout mNoCrimesLayout;
@@ -256,11 +257,20 @@ public class CrimeListFragment extends Fragment {
         }
 
         public void setCrimes(List<Crime> crimes) {
+            if(crimes.size() > mCrimes.size()) {
+                mCrimes = crimes;
+                notifyItemInserted(BACK_INSERTING);
+            }
             mCrimes = crimes;
         }
 
-        private void removeCrime(int index){
-            mCrimes.remove(index);
+        public void deleteCrime(UUID mCrimeId) {
+            for (Crime c : mCrimes) {
+                if (c.getId().equals(mCrimeId)){
+                    CrimeLab.get(getActivity()).deleteCrime(mCrimeId);
+                    notifyItemRemoved(mCrimes.indexOf(c));
+                }
+            }
         }
     }
 
@@ -282,11 +292,8 @@ public class CrimeListFragment extends Fragment {
 
         if(requestCode == REQUEST_DELETE_CRIME){
             UUID mCrimeId = (UUID) data.getSerializableExtra(DELETE_CRIME);
-            CrimeLab lab = CrimeLab.get(getActivity());
-            int index = mAdapter.mCrimes.indexOf(lab.getCrime(mCrimeId));
+            mAdapter.deleteCrime(mCrimeId);
 
-            mAdapter.removeCrime(index);
-            mAdapter.notifyItemRemoved(index);
         }
     }
 }
