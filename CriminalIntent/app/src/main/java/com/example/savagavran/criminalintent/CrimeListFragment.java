@@ -20,6 +20,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -58,7 +59,9 @@ public class CrimeListFragment extends Fragment {
         Crime crime = new Crime();
         CrimeLab lab = CrimeLab.get(getActivity());
         lab.addCrime(crime);
+        mNoCrimesLayout.setVisibility(View.INVISIBLE);
         mAdapter.setCrimes(lab.getCrimes());
+        mCrimePosition = crime.getId();
         Intent intent = CrimePagerActivity
                 .newIntent(getActivity(), crime.getId(), mSubtitleVisible);
         startActivityForResult(intent, REQUEST_DELETE_CRIME);
@@ -163,6 +166,14 @@ public class CrimeListFragment extends Fragment {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
 
+        int position = 0;
+        if (mCrimePosition != null) {
+            for(Crime c : crimes) {
+                if(c.getId().equals(mCrimePosition))
+                    position = crimes.indexOf(c);
+            }
+        }
+
         // Remove the crime for which the title is not set //
         if(crimes.size() != 0) {
             mNoCrimesLayout.setVisibility(View.INVISIBLE);
@@ -182,12 +193,7 @@ public class CrimeListFragment extends Fragment {
             mCrimeRecycleView.setAdapter(mAdapter);
         } else {
             mAdapter.setCrimes(crimes);
-            if (mCrimePosition != null) {
-                for(Crime c : crimes) {
-                    if(c.getId().equals(mCrimePosition))
-                        mAdapter.notifyItemChanged(crimes.indexOf(c));
-                }
-            }
+            mAdapter.notifyItemChanged(position);
         }
         updateSubtitle();
     }

@@ -1,6 +1,10 @@
 package com.example.savagavran.criminalintent;
 
-import java.security.PrivateKey;
+import android.content.pm.PackageManager;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.ContactsContract;
+import android.text.format.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -31,13 +35,15 @@ public class CrimeFragment extends Fragment {
     private static final String DIALOG_TIME = "DialogTime";
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_TIME = 1;
+    private static final int REQUEST_CONTACT = 2;
 
     private Crime mCrime;
     private EditText mTitleField;
     private Button mDateButton;
     private Button mTimeButton;
+    private Button mReportButton;
+    private Button mSuspectButton;
     private CheckBox mSolvedCheckBox;
-    private Menu mMenu;
     private final String DATE_FORMAT = "EEEE, MMM d, y";
     public static final String TIME_FORMAT = "H:m:s";
 
@@ -101,6 +107,42 @@ public class CrimeFragment extends Fragment {
         });
     }
 
+    private void wireSendCrimeButton() {
+        mReportButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!mTitleField.getText().toString().isEmpty()) {
+                    Intent i = new Intent(Intent.ACTION_SEND);
+                    i.setType("text/plain");
+                    i.putExtra(Intent.EXTRA_TEXT, getCrimeReport());
+                    i.putExtra(Intent.EXTRA_SUBJECT,
+                            getString(R.string.crime_report_subject));
+                    i = Intent.createChooser(i, getString(R.string.send_report));
+                    startActivity(i);
+                }
+            }
+        });
+    }
+
+    private void wireSuspectButton(final Intent pickContact) {
+        mSuspectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivityForResult(pickContact, REQUEST_CONTACT);
+            }
+        });
+
+        if(mCrime.getSuspect() != null) {
+            mSuspectButton.setText(mCrime.getSuspect());
+        }
+
+        PackageManager packageManager = getActivity().getPackageManager();
+        if(packageManager.resolveActivity(pickContact,
+                PackageManager.MATCH_DEFAULT_ONLY) == null ) {
+            mSuspectButton.setEnabled(false);
+        }
+    }
+
     private void updateDate() {
         SimpleDateFormat fmt = new SimpleDateFormat(DATE_FORMAT, Locale.US);
         mDateButton.setText(fmt.format(mCrime.getDate()));
@@ -109,6 +151,29 @@ public class CrimeFragment extends Fragment {
     private void updateTime() {
         SimpleDateFormat fmt = new SimpleDateFormat(TIME_FORMAT, Locale.US);
         mTimeButton.setText(fmt.format(mCrime.getTime()));
+    }
+
+    private String getCrimeReport() {
+        String solvedString;
+        if(mCrime.isSolved()) {
+            solvedString = getString(R.string.crime_report_solved);
+        } else {
+            solvedString = getString(R.string.crime_report_unsolved);
+        }
+
+        String dateFormat = "EEE, MMM dd";
+        String dateString = DateFormat.format(dateFormat, mCrime.getDate()).toString();
+
+        String suspect = mCrime.getSuspect();
+        if(suspect == null) {
+            suspect = getString(R.string.crime_report_no_suspect);
+        } else {
+            suspect = getString(R.string.crime_report_suspect, suspect);
+        }
+
+        String report = getString(R.string.crime_report, mCrime.getTitle(), dateString, solvedString, suspect);
+
+        return report;
     }
 
     @Override
@@ -135,12 +200,19 @@ public class CrimeFragment extends Fragment {
         mTitleField = (EditText)v.findViewById(R.id.crime_title);
         mDateButton = (Button) v.findViewById(R.id.crime_date);
         mTimeButton = (Button) v.findViewById(R.id.crime_time);
+        mReportButton = (Button) v.findViewById(R.id.crime_report);
+        mSuspectButton = (Button) v.findViewById(R.id.crime_suspect);
         mSolvedCheckBox = (CheckBox) v.findViewById(R.id.crime_solved);
 
         wireTitleField();
         wireDateButton();
         wireTimeButton();
+        wireSendCrimeButton();
         wireSolvedCheckBox();
+
+        final Intent pickContact = new Intent(Intent.ACTION_PICK,
+                ContactsContract.Contacts.CONTENT_URI);
+        wireSuspectButton(pickContact);
 
         return v;
     }
@@ -155,12 +227,30 @@ public class CrimeFragment extends Fragment {
             Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
             mCrime.setDate(date);
             updateDate();
-        }
 
-        if(requestCode == REQUEST_TIME) {
+        } else if(requestCode == REQUEST_TIME) {
             Date time = (Date) data.getSerializableExtra(TimePickerFragment.EXTRA_TIME);
             mCrime.setTime(time);
             updateTime();
+
+        } else if (requestCode == REQUEST_CONTACT && data != null) {
+            Uri contactUri = data.getData();
+            String[] queryFields = new String[] {
+                    ContactsContract.Contacts.DISPLAY_NAME
+            };
+            Cursor c = getActivity().getContentResolver()
+                    .query(contactUri, queryFields, null, null, null);
+            try{
+                if(c.getCount() == 0){
+                    return;
+                }
+                c.moveToFirst();
+                String suspect = c.getString(0);
+                mCrime.setSuspect(suspect);
+                mSuspectButton.setText(suspect);
+            } finally {
+                c.close();
+            }
         }
     }
 
@@ -168,29 +258,21 @@ public class CrimeFragment extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_crime, menu);
-        mMenu = menu;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-
-/*        MenuItem delete = mMenu.findItem(R.id.menu_item_delete_crime);
-        if(mCrime.getTitle() == null) {
-            delete.setEnabled(false);
-        } else {
-            delete.setEnabled(true);
-        }*/
-            switch(item.getItemId()) {
-                case R.id.menu_item_delete_crime:
-                    if(mCrime.getTitle() != null) {
-                        Intent intent = new Intent();
-                        getActivity().setResult(Activity.RESULT_OK, CrimeListFragment.deleteCrime(intent, mCrime.getId()));
-                        getActivity().finish();
-                    }
-                    return true;
-                default:
-                    return super.onOptionsItemSelected(item);
-            }
+        switch(item.getItemId()) {
+            case R.id.menu_item_delete_crime:
+                if(mCrime.getTitle() != null) {
+                    Intent intent = new Intent();
+                    getActivity().setResult(Activity.RESULT_OK, CrimeListFragment.deleteCrime(intent, mCrime.getId()));
+                    getActivity().finish();
+                }
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
-
     }
+
+}
