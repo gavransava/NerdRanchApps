@@ -56,10 +56,12 @@ public class CrimeListFragment extends Fragment {
 
     private void addNewCrime() {
         Crime crime = new Crime();
-        CrimeLab.get(getActivity()).addCrime(crime);
+        CrimeLab lab = CrimeLab.get(getActivity());
+        lab.addCrime(crime);
+        mAdapter.setCrimes(lab.getCrimes());
         Intent intent = CrimePagerActivity
                 .newIntent(getActivity(), crime.getId(), mSubtitleVisible);
-        startActivity(intent);
+        startActivityForResult(intent, REQUEST_DELETE_CRIME);
     }
 
     @Override
@@ -282,10 +284,6 @@ public class CrimeListFragment extends Fragment {
         fmt = new SimpleDateFormat(CrimeFragment.TIME_FORMAT, Locale.US);
         return date1 + " " + fmt.format(crime.getTime()) + " " + date2;
     }
-
-
-    // Isn't entered first time the fragment for editing crimes is made and when X
-    // (delete crime is pushed instead of back)
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode != Activity.RESULT_OK) {
