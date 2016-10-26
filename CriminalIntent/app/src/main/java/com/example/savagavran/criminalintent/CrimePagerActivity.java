@@ -2,6 +2,7 @@ package com.example.savagavran.criminalintent;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -71,5 +72,20 @@ public class CrimePagerActivity extends AppCompatActivity {
         Intent intent = NavUtils.getParentActivityIntent(this);
         CrimeListFragment.reCreateIntent(intent, mSubtitleVisibility);
         return intent;
+    }
+
+    @Override
+    public  void onRequestPermissionsResult(int requestCode,
+                                            String permissions[], int[] grantResults) {
+
+        switch(requestCode) {
+            case CrimeFragment.PERMISSION_REQUEST_READ_CONTACTS:
+            case CrimeFragment.PERMISSION_REQUEST_CALL_CONTACT: {
+                FragmentManager manager = getSupportFragmentManager();
+                Fragment fragment = manager.findFragmentById(R.id.activity_crime_pager_view_pager);
+                fragment.onRequestPermissionsResult(requestCode, permissions, grantResults);
+            }
+            break;
+        }
     }
 }

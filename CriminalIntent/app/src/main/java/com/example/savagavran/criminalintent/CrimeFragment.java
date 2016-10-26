@@ -1,10 +1,13 @@
 package com.example.savagavran.criminalintent;
 
+import android.Manifest;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.provider.ContactsContract;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ShareCompat.IntentBuilder;
+import android.support.v4.content.ContextCompat;
 import android.text.format.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -44,9 +47,13 @@ public class CrimeFragment extends Fragment {
     private Button mTimeButton;
     private Button mReportButton;
     private Button mSuspectButton;
+    private Button mCallSuspectButton;
     private CheckBox mSolvedCheckBox;
+    private String mSuspectPhoneNumber;
     private final String DATE_FORMAT = "EEEE, MMM d, y";
     public static final String TIME_FORMAT = "H:m:s";
+    public static final int PERMISSION_REQUEST_READ_CONTACTS = 3;
+    public static final int PERMISSION_REQUEST_CALL_CONTACT = 4;
 
     public static CrimeFragment newInstance(UUID crimeId) {
         Bundle args = new Bundle();
@@ -113,12 +120,12 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 if(!mTitleField.getText().toString().isEmpty()) {
-                   IntentBuilder.from(getActivity())
-                           .setType("text/plain")
-                           .setText(getCrimeReport())
-                           .setSubject(getString(R.string.crime_report_subject))
-                           .setChooserTitle(getString(R.string.send_report))
-                           .startChooser();
+                    IntentBuilder.from(getActivity())
+                            .setType("text/plain")
+                            .setText(getCrimeReport())
+                            .setSubject(getString(R.string.crime_report_subject))
+                            .setChooserTitle(getString(R.string.send_report))
+                            .startChooser();
                 }
             }
         });
@@ -132,8 +139,10 @@ public class CrimeFragment extends Fragment {
             }
         });
 
+        mCallSuspectButton.setEnabled(false);
         if(mCrime.getSuspect() != null) {
             mSuspectButton.setText(mCrime.getSuspect());
+            mCallSuspectButton.setEnabled(true);
         }
 
         PackageManager packageManager = getActivity().getPackageManager();
@@ -141,6 +150,61 @@ public class CrimeFragment extends Fragment {
                 PackageManager.MATCH_DEFAULT_ONLY) == null ) {
             mSuspectButton.setEnabled(false);
         }
+    }
+
+    private void wireCallSuspectButton(){
+        mCallSuspectButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!mSuspectButton.getText().toString().equals(getString(R.string.crime_suspect_text))) {
+                    if(ContextCompat.checkSelfPermission(getActivity(),
+                            Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+
+                        ActivityCompat.requestPermissions(getActivity(), new String[] {Manifest.permission.READ_CONTACTS},
+                                PERMISSION_REQUEST_READ_CONTACTS);
+                    }
+                    else {
+                        getSuspectPhoneNumber();
+                    }
+                }
+            }
+        });
+    }
+
+    private String getSuspectPhoneNumber() {
+        String number = "";
+        Cursor phones = getActivity().getContentResolver().
+                query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
+                        null,
+                        ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " = " + "'" +
+                                mSuspectButton.getText().toString() + "'",
+                        null, null);
+        try {
+            if (phones.getCount() == 0) {
+                return "";
+            }
+            phones.moveToFirst();
+            number = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)) ;
+
+            if(ContextCompat.checkSelfPermission(getActivity(),
+                    Manifest.permission.CALL_PHONE) != PackageManager.PERMISSION_GRANTED) {
+
+                ActivityCompat.requestPermissions(getActivity(), new String[] {Manifest.permission.CALL_PHONE},
+                        PERMISSION_REQUEST_CALL_CONTACT);
+            } else {
+                callSuspect(number);
+            }
+        } finally {
+            phones.close();
+        }
+        return number;
+    }
+
+    private void callSuspect(String number) {
+        mCallSuspectButton.setEnabled(true);
+        Intent intent = new Intent(Intent.ACTION_CALL);
+        intent.setData(Uri.parse("tel:" + number));
+        startActivity(intent);
     }
 
     private void updateDate() {
@@ -202,6 +266,7 @@ public class CrimeFragment extends Fragment {
         mTimeButton = (Button) v.findViewById(R.id.crime_time);
         mReportButton = (Button) v.findViewById(R.id.crime_report);
         mSuspectButton = (Button) v.findViewById(R.id.crime_suspect);
+        mCallSuspectButton = (Button) v.findViewById(R.id.call_suspect);
         mSolvedCheckBox = (CheckBox) v.findViewById(R.id.crime_solved);
 
         wireTitleField();
@@ -210,10 +275,11 @@ public class CrimeFragment extends Fragment {
         wireSendCrimeButton();
         wireSolvedCheckBox();
 
+
         final Intent pickContact = new Intent(Intent.ACTION_PICK,
                 ContactsContract.Contacts.CONTENT_URI);
         wireSuspectButton(pickContact);
-
+        wireCallSuspectButton();
         return v;
     }
 
@@ -248,6 +314,7 @@ public class CrimeFragment extends Fragment {
                 String suspect = c.getString(0);
                 mCrime.setSuspect(suspect);
                 mSuspectButton.setText(suspect);
+                mCallSuspectButton.setEnabled(true);
             } finally {
                 c.close();
             }
@@ -272,6 +339,30 @@ public class CrimeFragment extends Fragment {
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    public  void onRequestPermissionsResult(int requestCode,
+                                            String permissions[], int[] grantResults){
+        switch(requestCode) {
+            case PERMISSION_REQUEST_READ_CONTACTS: {
+                if(grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    mSuspectPhoneNumber = getSuspectPhoneNumber();
+                } else {
+                    mCallSuspectButton.setEnabled(false);
+                }
+                break;
+            }
+            case PERMISSION_REQUEST_CALL_CONTACT : {
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    callSuspect(mSuspectPhoneNumber);
+                } else {
+                    mCallSuspectButton.setEnabled(false);
+                }
+            }
         }
     }
 }
