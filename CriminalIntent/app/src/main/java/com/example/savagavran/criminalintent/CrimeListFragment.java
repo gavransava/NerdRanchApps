@@ -1,6 +1,7 @@
 package com.example.savagavran.criminalintent;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -31,7 +32,7 @@ public class CrimeListFragment extends Fragment {
     private final String DATE_FORMAT2 = "z y";
     private static final String SAVED_SUBTITLE_VISIBLE_INTENT = "subtitle_intent";
     private static final String SAVED_SUBTITLE_VISIBLE_BUNDLE = "subtitle_bundle";
-    private static final int REQUEST_DELETE_CRIME = 0;
+    public static final int REQUEST_DELETE_CRIME = 0;
     private static final int BACK_INSERTING = 0;
     private static final String DELETE_CRIME = "delete_crime";
     private RecyclerView mCrimeRecycleView;
@@ -40,6 +41,17 @@ public class CrimeListFragment extends Fragment {
     private UUID mCrimePosition;
     private Button mNewCrimeButton;
     private boolean mSubtitleVisible;
+    private Callbacks mCallbacks;
+
+    public interface Callbacks {
+        void onCrimeSelected(Crime crime, boolean mSubtitleVisible, int requestCode);
+    }
+
+    @Override
+    public void onAttach(Context activity) {
+        super.onAttach(activity);
+        mCallbacks = (Callbacks) activity;
+    }
 
     public static Intent reCreateIntent(Intent intent, boolean subtitleVisible) {
         intent.putExtra(SAVED_SUBTITLE_VISIBLE_INTENT, subtitleVisible);
@@ -62,9 +74,8 @@ public class CrimeListFragment extends Fragment {
         mNoCrimesLayout.setVisibility(View.INVISIBLE);
         mAdapter.setCrimes(lab.getCrimes());
         mCrimePosition = crime.getId();
-        Intent intent = CrimePagerActivity
-                .newIntent(getActivity(), crime.getId(), mSubtitleVisible);
-        startActivityForResult(intent, REQUEST_DELETE_CRIME);
+
+        mCallbacks.onCrimeSelected(crime, mSubtitleVisible, REQUEST_DELETE_CRIME);
     }
 
     @Override
@@ -118,6 +129,12 @@ public class CrimeListFragment extends Fragment {
     }
 
     @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
         inflater.inflate(R.menu.fragment_crime_list,menu);
@@ -135,6 +152,7 @@ public class CrimeListFragment extends Fragment {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch(item.getItemId()) {
             case R.id.menu_item_new_crime:
+                updateUI();
                 addNewCrime();
                 return true;
             case R.id.menu_item_show_subtitle:
@@ -162,7 +180,7 @@ public class CrimeListFragment extends Fragment {
         activity.getSupportActionBar().setSubtitle(subtitle);
     }
 
-    private void updateUI() {
+    public void updateUI() {
         CrimeLab crimeLab = CrimeLab.get(getActivity());
         List<Crime> crimes = crimeLab.getCrimes();
 
@@ -231,9 +249,8 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-            Intent intent = CrimePagerActivity.newIntent(getActivity(),mCrime.getId(), mSubtitleVisible);
+            mCallbacks.onCrimeSelected(mCrime, mSubtitleVisible, REQUEST_DELETE_CRIME);
             mCrimePosition = mCrime.getId();
-            startActivityForResult(intent, REQUEST_DELETE_CRIME);
         }
     }
 
@@ -287,9 +304,10 @@ public class CrimeListFragment extends Fragment {
         String date1 = fmt.format(crime.getDate());
         fmt = new SimpleDateFormat(DATE_FORMAT2, Locale.US);
         String date2 = fmt.format(crime.getDate());
-        fmt = new SimpleDateFormat(CrimeFragment.TIME_FORMAT, Locale.US);
+        fmt = new SimpleDateFormat("H:m:s", Locale.US);
         return date1 + " " + fmt.format(crime.getTime()) + " " + date2;
     }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(resultCode != Activity.RESULT_OK) {
