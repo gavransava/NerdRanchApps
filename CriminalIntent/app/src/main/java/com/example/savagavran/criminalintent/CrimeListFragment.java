@@ -73,7 +73,7 @@ public class CrimeListFragment extends Fragment {
         lab.addCrime(crime);
         mNoCrimesLayout.setVisibility(View.INVISIBLE);
         mAdapter.setCrimes(lab.getCrimes());
-        mCrimePosition = crime.getId();
+        mCrimePosition = null;
 
         mCallbacks.onCrimeSelected(crime, mSubtitleVisible, REQUEST_DELETE_CRIME);
     }
@@ -185,6 +185,8 @@ public class CrimeListFragment extends Fragment {
         List<Crime> crimes = crimeLab.getCrimes();
 
         int position = 0;
+        boolean remove = false;
+
         if (mCrimePosition != null) {
             for(Crime c : crimes) {
                 if(c.getId().equals(mCrimePosition))
@@ -195,11 +197,12 @@ public class CrimeListFragment extends Fragment {
         // Remove the crime for which the title is not set //
         if(crimes.size() != 0) {
             mNoCrimesLayout.setVisibility(View.INVISIBLE);
-            if (crimes.get(crimes.size() - 1).getTitle() == null) {
+            if (crimes.get(0).getTitle() == null && position == 0) {
                 if(crimes.size() == 1)
                     mNoCrimesLayout.setVisibility(View.VISIBLE);
                 crimeLab.deleteLastCrime();
-                crimes.remove(crimes.size() - 1);
+                crimes.remove(0);
+                remove = true;
             }
         }
         else {
@@ -211,7 +214,10 @@ public class CrimeListFragment extends Fragment {
             mCrimeRecycleView.setAdapter(mAdapter);
         } else {
             mAdapter.setCrimes(crimes);
-            mAdapter.notifyItemChanged(position);
+            if(remove)
+                mAdapter.notifyItemRemoved(position);
+            else
+                mAdapter.notifyItemChanged(position);
         }
         updateSubtitle();
     }
