@@ -4,10 +4,12 @@ import android.Manifest;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.ShareCompat.IntentBuilder;
 import android.support.v4.content.ContextCompat;
 import android.text.format.DateFormat;
@@ -31,22 +33,28 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 public class CrimeFragment extends Fragment {
 
     private static final String ARG_CRIME_ID = "crime_id";
-    private static final String DIALOG_DATE = "DialogDate";
+    //private static final String DIALOG_DATE = "DialogDate";
     private static final String DIALOG_TIME = "DialogTime";
+    private static final String DIALOG_PHOTO = "DialogPhoto";
+
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_TIME = 1;
     private static final int REQUEST_CONTACT = 2;
     private static final int REQUEST_PHOTO = 3;
+    private static final int DISPLAY_PHOTO = 4;
 
     private Crime mCrime;
     private File mPhotoFile;
@@ -61,6 +69,9 @@ public class CrimeFragment extends Fragment {
     private ImageButton mPhotoButton;
     private ImageView mPhotoView;
     private PackageManager mPackageManager;
+    private LinearLayout mFragmentCrimeLayout;
+    private int mPhotoWidth;
+    private int mPhotoHeight;
     private final String DATE_FORMAT = "EEEE, MMM d, y";
     public static final String TIME_FORMAT = "H:m:s";
     public static final int PERMISSION_REQUEST_READ_CONTACTS = 3;
@@ -201,6 +212,22 @@ public class CrimeFragment extends Fragment {
         });
     }
 
+    private void wirePhotoView() {
+        mPhotoView.setEnabled(false);
+        mPhotoView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                zoomInPhoto();
+            }
+        });
+    }
+
+    private void zoomInPhoto() {
+        FragmentManager manager = getFragmentManager();
+        PhotoFragment dialog = PhotoFragment.newInstance(mPhotoFile);
+        dialog.show(manager, DIALOG_PHOTO);
+    }
+
     private String getSuspectPhoneNumber() {
         String number = "";
         Cursor phones = getActivity().getContentResolver().
@@ -271,12 +298,24 @@ public class CrimeFragment extends Fragment {
     }
 
     private void updatePhotoView() {
+        ViewTreeObserver vto = mFragmentCrimeLayout.getViewTreeObserver();
+        vto.addOnGlobalLayoutListener(new OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                ImageView img = (ImageView) mFragmentCrimeLayout.findViewById(R.id.crime_photo);
+                mPhotoWidth  = img.getMeasuredWidth();
+                mPhotoHeight = img.getMeasuredHeight();
+            }
+        });
         if (mPhotoFile == null || !mPhotoFile.exists()) {
             mPhotoView.setImageDrawable(null);
         } else {
             Bitmap bitmap = PictureUtils.getScaledBitmap(
-                    mPhotoFile.getPath(), getActivity());
+                    mPhotoFile.getPath(),mPhotoWidth, mPhotoHeight);
+
+            bitmap = PictureUtils.rotateBitmap(bitmap, 90);
             mPhotoView.setImageBitmap(bitmap);
+            mPhotoView.setEnabled(true);
         }
     }
 
@@ -319,11 +358,14 @@ public class CrimeFragment extends Fragment {
         wireSendCrimeButton();
         wireSolvedCheckBox();
         wirePhotoButton();
+        wirePhotoView();
 
         final Intent pickContact = new Intent(Intent.ACTION_PICK,
                 ContactsContract.Contacts.CONTENT_URI);
         wireSuspectButton(pickContact);
         wireCallSuspectButton();
+
+        mFragmentCrimeLayout = (LinearLayout) v.findViewById(R.id.fragment_crime_id);
         updatePhotoView();
 
         return v;
