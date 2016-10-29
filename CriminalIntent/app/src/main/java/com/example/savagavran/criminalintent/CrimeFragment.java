@@ -51,7 +51,7 @@ public class CrimeFragment extends Fragment {
     private static final String DIALOG_TIME = "DialogTime";
     private static final String DIALOG_PHOTO = "DialogPhoto";
 
-    private static final int REQUEST_DATE = 0;
+    public static final int REQUEST_DATE = 0;
     private static final int REQUEST_TIME = 1;
     private static final int REQUEST_CONTACT = 2;
     private static final int REQUEST_PHOTO = 3;
@@ -115,7 +115,7 @@ public class CrimeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 Intent intent = DatePickerActivity.newIntent(getActivity(), mCrime.getDate());
-                startActivityForResult(intent, REQUEST_DATE);
+                getActivity().startActivityForResult(intent, REQUEST_DATE);
             }
         });
     }
@@ -184,7 +184,7 @@ public class CrimeFragment extends Fragment {
     private void wireCallSuspectButton(){
         mCallSuspectButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {/*
+            public void onClick(View v) {
                 if (!mSuspectButton.getText().toString().equals(getString(R.string.crime_suspect_text))) {
                     if(ContextCompat.checkSelfPermission(getActivity(),
                             Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
@@ -195,7 +195,7 @@ public class CrimeFragment extends Fragment {
                     else {
                         getSuspectPhoneNumber();
                     }
-                }*/
+                }
             }
         });
     }

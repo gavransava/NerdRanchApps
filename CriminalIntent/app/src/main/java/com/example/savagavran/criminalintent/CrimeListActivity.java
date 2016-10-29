@@ -24,7 +24,7 @@ public class CrimeListActivity extends SingleFragmentActivity
     public void onCrimeUpdated(Crime crime) {
         CrimeListFragment listFragment = (CrimeListFragment)
                 getSupportFragmentManager()
-                .findFragmentById(R.id.fragment_container);
+                        .findFragmentById(R.id.fragment_container);
         listFragment.updateUI();
     }
 
@@ -53,6 +53,12 @@ public class CrimeListActivity extends SingleFragmentActivity
             FragmentManager manager = getSupportFragmentManager();
             CrimeListFragment listFragment = (CrimeListFragment)
                     manager.findFragmentById(R.id.fragment_container);
+            listFragment.onActivityResult(requestCode, resultCode, data);
+        }
+        else if(requestCode == CrimeFragment.REQUEST_DATE) {
+            FragmentManager manager = getSupportFragmentManager();
+            CrimeFragment listFragment = (CrimeFragment)
+                    manager.findFragmentById(R.id.detail_fragment_container);
             listFragment.onActivityResult(requestCode, resultCode, data);
         }
     }

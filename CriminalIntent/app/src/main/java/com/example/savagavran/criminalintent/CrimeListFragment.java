@@ -32,7 +32,7 @@ public class CrimeListFragment extends Fragment {
     private final String DATE_FORMAT2 = "z y";
     private static final String SAVED_SUBTITLE_VISIBLE_INTENT = "subtitle_intent";
     private static final String SAVED_SUBTITLE_VISIBLE_BUNDLE = "subtitle_bundle";
-    public static final int REQUEST_DELETE_CRIME = 0;
+    public static final int REQUEST_DELETE_CRIME = 1;
     private static final int BACK_INSERTING = 0;
     private static final String DELETE_CRIME = "delete_crime";
     private RecyclerView mCrimeRecycleView;
