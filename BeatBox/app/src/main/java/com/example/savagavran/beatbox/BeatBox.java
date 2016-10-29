@@ -9,6 +9,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class BeatBox {
@@ -47,6 +48,7 @@ public class BeatBox {
                 Log.e(TAG, "Could not load sound " + filename, ioe);
             }
         }
+        Collections.reverse(mSounds);
     }
 
     private void load(Sound sound) throws IOException {
