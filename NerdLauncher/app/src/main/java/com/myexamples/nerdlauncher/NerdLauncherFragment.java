@@ -42,6 +42,7 @@ public class NerdLauncherFragment extends Fragment {
 
     private class ActivityHolder extends RecyclerView.ViewHolder
             implements View.OnClickListener {
+        private View mItemView;
         private ResolveInfo mResolveInfo;
         private TextView mNameTextView;
         private ImageView mIconView;
@@ -51,7 +52,8 @@ public class NerdLauncherFragment extends Fragment {
             super(itemView);
             mNameTextView = (TextView) itemView.findViewById(R.id.textView);
             mIconView = (ImageView) itemView.findViewById(R.id.iconView);
-            mNameTextView.setOnClickListener(this);
+            mItemView = itemView;
+            mItemView.setOnClickListener(this);
         }
 
         public void bindActivity(ResolveInfo resolveInfo) {
