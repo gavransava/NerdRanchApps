@@ -15,4 +15,9 @@ public class PhotoGalleryActivity extends SingleFragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_fragment);
     }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
 }

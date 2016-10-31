@@ -2,32 +2,39 @@ package com.myexamples.photogallery;
 
 public class GalleryItem {
 
-    private String mCaption;
-    private String mId;
-    private String mUrl;
-    @Override
-    public String toString() {
-        return mCaption;
-    }
-
-    public void setCaption(String caption) {
-        mCaption = caption;
-    }
+    private String title;
 
     public String getId() {
-        return mId;
+        return id;
     }
 
     public void setId(String id) {
-        mId = id;
+        this.id = id;
     }
 
-    public String getUrl() {
-        return mUrl;
+    private String id;
+    private String url_s;
+
+    @Override
+    public String toString() {
+        return title;
     }
 
-    public void setUrl(String url) {
-        mUrl = url;
+    public String getTitle() {
+        return title;
     }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public String getUrl_s() {
+        return url_s;
+    }
+
+    public void setUrl_s(String url_s) {
+        this.url_s = url_s;
+    }
+
 
 }
