@@ -72,7 +72,7 @@ public class FlickrFetchr {
                     .build().toString();
             String jsonString = getUrlString(url);
             JSONObject jsonBody = new JSONObject(jsonString);
-            parseItems(items, jsonBody);
+            items  = parseItems(jsonBody);
         }
         catch (JSONException je) {
             Log.e(TAG, "Failed to parse JSON", je);
@@ -84,9 +84,10 @@ public class FlickrFetchr {
         return items;
     }
 
-    private void parseItems(List<GalleryItem> items, JSONObject jsonBody)
+    private List<GalleryItem>  parseItems(JSONObject jsonBody)
             throws IOException, JSONException {
 
+        List<GalleryItem> items;
         JSONObject photosJsonObject = jsonBody.getJSONObject("photos");
         JSONArray photoJsonArray = photosJsonObject.getJSONArray("photo");
 
@@ -94,21 +95,6 @@ public class FlickrFetchr {
         String listJson = photoJsonArray.toString();
         Type GalleryListType = new TypeToken<ArrayList<GalleryItem>>(){}.getType();
         items = gson.fromJson(listJson, GalleryListType);
-
-
-        for (int i = 0; i < items.size(); i++) {
-            /*JSONObject photoJsonObject = photo.getJSONObject(i);
-
-            GalleryItem item = new GalleryItem();
-            item.setId(photoJsonObject.getString("id"));
-            item.setCaption(photoJsonObject.getString("title"));
-
-            if (!photoJsonObject.has("url_s")) {
-                continue;
-            }
-
-            item.setUrl(photoJsonObject.getString("url_s"));
-            items.add(item);*/
-        }
+        return items;
     }
 }
