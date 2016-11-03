@@ -1,8 +1,13 @@
 package com.myexamples.photogallery;
 
+import android.net.Uri;
+
 public class GalleryItem {
 
     private String title;
+    private String id;
+    private String url_s;
+    private String owner;
 
     public String getId() {
         return id;
@@ -11,9 +16,6 @@ public class GalleryItem {
     public void setId(String id) {
         this.id = id;
     }
-
-    private String id;
-    private String url_s;
 
     @Override
     public String toString() {
@@ -36,5 +38,19 @@ public class GalleryItem {
         this.url_s = url_s;
     }
 
+    public String getOwner() {
+        return owner;
+    }
 
+    public void setOwner(String owner) {
+        owner = owner;
+    }
+
+    public Uri getPhotoPageUri() {
+        return Uri.parse("http://www.flickr.com/photos/")
+                .buildUpon()
+                .appendPath(owner)
+                .appendPath(id)
+                .build();
+    }
 }
