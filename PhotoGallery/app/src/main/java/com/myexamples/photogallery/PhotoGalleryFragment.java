@@ -53,8 +53,10 @@ public class PhotoGalleryFragment extends VisibleFragment
                 new ThumbnailDownloader.ThumbnailDownloadListener<PhotoHolder>() {
                     @Override
                     public void onThumbnailDownloaded(PhotoHolder photoHolder, Bitmap bitmap) {
-                        Drawable drawable = new BitmapDrawable(getResources(), bitmap);
-                        photoHolder.bindDrawable(drawable);
+                        if(isAdded() && getActivity() != null) {
+                            Drawable drawable = new BitmapDrawable(getResources(), bitmap);
+                            photoHolder.bindDrawable(drawable);
+                        }
                     }
                 }
         );
@@ -166,7 +168,7 @@ public class PhotoGalleryFragment extends VisibleFragment
         }
         @Override
         public void onClick(View v) {
-            Intent i = new Intent(Intent.ACTION_VIEW, mGalleryItem.getPhotoPageUri());
+            Intent i = PhotoPageActivity.newIntent(getActivity(), mGalleryItem.getPhotoPageUri());
             startActivity(i);
         }
     }
