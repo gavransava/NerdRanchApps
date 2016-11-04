@@ -8,6 +8,8 @@ public class GalleryItem {
     private String id;
     private String url_s;
     private String owner;
+    private double longitude;
+    private double latitude;
 
     public String getId() {
         return id;
@@ -44,6 +46,22 @@ public class GalleryItem {
 
     public void setOwner(String owner) {
         owner = owner;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 
     public Uri getPhotoPageUri() {
