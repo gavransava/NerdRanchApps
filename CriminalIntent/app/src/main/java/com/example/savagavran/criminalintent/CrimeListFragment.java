@@ -248,6 +248,11 @@ public class CrimeListFragment extends Fragment {
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     mCrime.setSolved(isChecked);
                     CrimeLab.get(getActivity()).updateCrime(mCrime);
+                    CrimeFragment cr = (CrimeFragment) getActivity().getSupportFragmentManager()
+                            .findFragmentById(R.id.detail_fragment_container);
+                    if (cr != null) {
+                        cr.onCheckedChanged(mCrime.getId());
+                    }
                 }
             });
         }

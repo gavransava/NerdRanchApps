@@ -101,6 +101,11 @@ public class CrimeFragment extends Fragment {
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 mCrime.setTitle(s.toString());
                 updateCrime();
+                if(mTitleField.getText().toString().isEmpty()) {
+                    mSolvedCheckBox.setEnabled(false);
+                } else {
+                    mSolvedCheckBox.setEnabled(true);
+                }
             }
 
             @Override
@@ -134,14 +139,24 @@ public class CrimeFragment extends Fragment {
     }
 
     private void wireSolvedCheckBox() {
+        if(!mTitleField.getText().toString().isEmpty()) {
+           mSolvedCheckBox.setEnabled(true);
+        }
+
         mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mCrime.setSolved(isChecked);
-                updateCrime();
+                if(!mTitleField.getText().toString().isEmpty()) {
+                    updateCrime();
+                }
             }
         });
+    }
+
+    public void onCheckedChanged(UUID id) {
+        mSolvedCheckBox.setChecked(CrimeLab.get(getContext()).getCrime(id).isSolved());
     }
 
     private void wireSendCrimeButton() {
