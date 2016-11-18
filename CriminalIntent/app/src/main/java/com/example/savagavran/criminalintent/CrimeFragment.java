@@ -1,33 +1,24 @@
 package com.example.savagavran.criminalintent;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.net.Uri;
+import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.ShareCompat.IntentBuilder;
-import android.support.v4.content.ContextCompat;
-import android.text.format.DateFormat;
-
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.UUID;
-
-import android.app.Activity;
-import android.content.Intent;
-import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.ShareCompat.IntentBuilder;
+import android.support.v4.content.ContextCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -43,6 +34,12 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import java.util.UUID;
 
 public class CrimeFragment extends Fragment {
 
@@ -74,6 +71,7 @@ public class CrimeFragment extends Fragment {
     private Callbacks mCallbacks;
     private int mPhotoWidth;
     private int mPhotoHeight;
+    private boolean mTwoPane;
     private final String DATE_FORMAT = "EEEE, MMM d, y";
     private static final String TIME_FORMAT = "H:m:s";
     public static final int PERMISSION_REQUEST_READ_CONTACTS = 3;
@@ -83,9 +81,10 @@ public class CrimeFragment extends Fragment {
         void onCrimeUpdated(Crime crime);
     }
 
-    public static CrimeFragment newInstance(UUID crimeId) {
+    public static CrimeFragment newInstance(UUID crimeId, boolean twoPane) {
         Bundle args = new Bundle();
         args.putSerializable(ARG_CRIME_ID, crimeId);
+        args.putBoolean(CrimeListActivity.TWO_PANE, twoPane);
 
         CrimeFragment fragment = new CrimeFragment();
         fragment.setArguments(args);
@@ -338,6 +337,7 @@ public class CrimeFragment extends Fragment {
         mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
         mPhotoFile = CrimeLab.get(getActivity()).getPhotoFile(mCrime);
 
+        mTwoPane = getArguments().getBoolean(CrimeListActivity.TWO_PANE);
         setHasOptionsMenu(true);
     }
 
@@ -452,9 +452,14 @@ public class CrimeFragment extends Fragment {
         switch(item.getItemId()) {
             case R.id.menu_item_delete_crime:
                 if(mCrime.getTitle() != null) {
-                    Intent intent = new Intent();
-                    getActivity().setResult(Activity.RESULT_OK, CrimeListFragment.deleteCrime(intent, mCrime.getId()));
-                    getActivity().finish();
+                    if(mTwoPane){
+                        ((CrimeListFragment) getActivity().getSupportFragmentManager()
+                                .findFragmentById(R.id.fragment_container)).deleteCrimeWithUUID(mCrime.getId());
+                    } else {
+                        Intent intent = new Intent();
+                        getActivity().setResult(Activity.RESULT_OK, CrimeListFragment.deleteCrime(intent, mCrime.getId()));
+                        getActivity().finish();
+                    }
                 }
                 return true;
             default:

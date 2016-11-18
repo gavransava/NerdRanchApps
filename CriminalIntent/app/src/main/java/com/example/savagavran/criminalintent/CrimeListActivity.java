@@ -5,10 +5,10 @@ import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
-import java.util.UUID;
-
 public class CrimeListActivity extends SingleFragmentActivity
         implements CrimeListFragment.Callbacks, CrimeFragment.Callbacks{
+
+    public final static String TWO_PANE = "twoPane";
 
     @Override
     protected Fragment createFragment(){
@@ -34,7 +34,7 @@ public class CrimeListActivity extends SingleFragmentActivity
             Intent intent = CrimePagerActivity.newIntent(this, crime.getId(), mSubtitleVisible);
             startActivityForResult(intent, requestCode);
         } else {
-            Fragment newDetail = CrimeFragment.newInstance(crime.getId());
+            Fragment newDetail = CrimeFragment.newInstance(crime.getId(), true);
 
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.detail_fragment_container, newDetail)

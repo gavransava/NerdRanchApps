@@ -21,7 +21,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -298,10 +297,17 @@ public class CrimeListFragment extends Fragment {
             for (Crime c : mCrimes) {
                 if (c.getId().equals(mCrimeId)){
                     CrimeLab.get(getActivity()).deleteCrime(mCrimeId);
-                    notifyItemRemoved(mCrimes.indexOf(c));
+                    int index = mCrimes.indexOf(c);
+                    mCrimes = CrimeLab.get(getActivity()).getCrimes();
+                    notifyItemRemoved(index);
+                    updateSubtitle();
                 }
             }
         }
+    }
+
+    public void deleteCrimeWithUUID(UUID crimeId) {
+        mAdapter.deleteCrime(crimeId);
     }
 
     private String mergeDateTime(Crime crime) {
@@ -320,10 +326,9 @@ public class CrimeListFragment extends Fragment {
             return;
         }
 
-        if(requestCode == REQUEST_DELETE_CRIME){
+        if(requestCode == REQUEST_DELETE_CRIME) {
             UUID mCrimeId = (UUID) data.getSerializableExtra(DELETE_CRIME);
-            mAdapter.deleteCrime(mCrimeId);
-
+            deleteCrimeWithUUID(mCrimeId);
         }
     }
 }
